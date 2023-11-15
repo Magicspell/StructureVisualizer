@@ -61,16 +61,39 @@ class TextBox:
                         move_back = self.lines[self.line_index].remove_char(self.char_index)
                         if move_back == -1:
                             # -1 indicates that there wasnt a char to remove
-                            if len(self.lines) > 1:
+                            if self.line_index > 0:
+                                # Set char index to end of previous line.
+                                self.char_index = self.lines[self.line_index - 1].get_char_length()
+                                self.cursor_x = self.lines[self.line_index - 1].get_pixel_length() + self.left_buffer
+
+                                # Add all remaining chars from current line to previous line.
+                                self.lines[self.line_index -1].add_chars(self.lines[self.line_index].get_chars())
                                 self.lines.pop(self.line_index)
                                 self.line_index -= 1
-                                self.char_index = self.lines[self.line_index].get_char_length()
-                                print(self.line_index)
-                                self.cursor_x = self.lines[self.line_index].get_pixel_length() + self.left_buffer
                                 self.cursor_y -= self.text_height
                         else:
                             self.cursor_x -= move_back
                             self.char_index -= 1
+                    case pygame.K_LEFT:
+                        if self.char_index >= 1:
+                            self.char_index -= 1
+                            self.cursor_x -= self.font.size(self.lines[self.line_index].get_char_at(self.char_index))[0]
+                    case pygame.K_RIGHT:
+                        line_length = self.lines[self.line_index].get_char_length()
+                        if self.char_index < line_length:
+                            self.char_index += 1
+                            self.cursor_x += self.font.size(self.lines[self.line_index].get_char_at(self.char_index -1 ))[0]
+                    case pygame.K_DOWN:
+                        if self.line_index < len(self.lines) - 1:
+                            self.line_index += 1
+                            self.cursor_y += self.text_height
+                    case pygame.K_UP:
+                        if self.line_index >= 1:
+                            self.line_index -= 1
+                            self.cursor_y -= self.text_height
+                            if self.char_index > self.lines[self.line_index].get_char_length() - 1:
+                                self.char_index = self.lines[self.line_index].get_char_length() - 1
+                                self.cursor_x = self.lines[self.line_index].get_pixel_length() + self.left_buffer
                     case default:
                         self.lines[self.line_index].add_char_at(self.char_index, event.unicode)
                         self.char_index += 1
@@ -85,16 +108,28 @@ class Line:
     def get_pixel_length(self):
         return self.pixel_length
     
+    def get_pixel_length_at(self, index):
+        return self.font.size(''.join(self.chars[:index]))[0]
+    
     def get_char_length(self):
         return len(self.chars)
+
+    def get_chars(self):
+        return self.chars
 
     def add_char(self, c):
         self.chars.append(c)
         self.pixel_length += self.font.size(c)[0]
-    
+        
+    def add_chars(self, chars):
+        self.chars += chars
+
     def add_char_at(self, index, c):
         self.chars.insert(index, c)
         self.pixel_length += self.font.size(c)[0]
+
+    def get_char_at(self, index):
+        return self.chars[index]
     
     def get_string(self):
         return ''.join(self.chars)
