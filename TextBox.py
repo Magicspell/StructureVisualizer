@@ -1,7 +1,10 @@
 import pygame
+from ScrollBar import ScrollBar
 
 class TextBox:
-    def __init__(self, loc = (0,0), width = 500, height = 100, background_color = (200, 200, 200), text_color = (0, 0, 0), font_name = "freesansbold.ttf", text_size = 15, cursor_color = (0, 0, 0)):
+    def __init__(self, loc = (0,0), width = 500, height = 100, background_color = (200, 200, 200), text_color = (0, 0, 0), 
+                font_name = "freesansbold.ttf", text_size = 15, cursor_color = (0, 0, 0), scroll_bar_background = (30, 30, 30), 
+                scroll_bar_foreground = (200, 200, 200)):
         self.x = loc[0]
         self.y = loc[1]
         self.width = width
@@ -29,23 +32,40 @@ class TextBox:
         self.cursor_color = cursor_color
         self.cursor_rect = pygame.Surface((self.cursor_width, self.cursor_height))
         self.cursor_rect.fill(self.cursor_color)
+
+        self.scroll_bar_width = 10
+        self.scroll_bar_foreground = scroll_bar_foreground
+        self.scroll_bar_background = scroll_bar_background
+
+        self.x_scroll_bar = ScrollBar((self.x, self.height - self.scroll_bar_width + self.y), self.scroll_bar_width,
+            self.width, scroll_bar_foreground, scroll_bar_background, vertical=False)
+        self.y_scroll_bar = ScrollBar((self.width - self.scroll_bar_width + self.x, self.y), self.scroll_bar_width,
+            self.height, scroll_bar_foreground, scroll_bar_background, vertical=True)
+
     
     def draw(self, screen):
         # Draw background
         rect = pygame.Rect(self.x, self.y, self.width, self.height)
         pygame.draw.rect(screen, self.background_color, rect)
 
+        x_offset = self.x_scroll_bar.get_value()
+        y_offset = self.y_scroll_bar.get_value()
+
         # Draw all text characters
         cur_x = self.x + self.left_buffer
         cur_y = self.y + self.top_buffer
         for line in self.lines:
             line_surface = self.font.render(line.get_string(), True, self.text_color)
-            screen.blit(line_surface, (cur_x, cur_y))
+            screen.blit(line_surface, (cur_x + x_offset, cur_y + y_offset))
             cur_y += self.text_height
             cur_x = self.x + self.left_buffer
 
         # Draw cursor
-        if self.focused: screen.blit(self.cursor_rect, (self.cursor_x, self.cursor_y))
+        if self.focused: screen.blit(self.cursor_rect, (self.cursor_x + x_offset, self.cursor_y + y_offset))
+
+        # Draw ScrollBars
+        self.x_scroll_bar.draw(screen)
+        self.y_scroll_bar.draw(screen)
 
     def process_event(self, event):
         if self.focused:
@@ -80,13 +100,16 @@ class TextBox:
                             self.cursor_x -= self.font.size(self.lines[self.line_index].get_char_at(self.char_index))[0]
                     case pygame.K_RIGHT:
                         line_length = self.lines[self.line_index].get_char_length()
-                        if self.char_index < line_length:
+                        if self.char_index < line_length - 1:
                             self.char_index += 1
                             self.cursor_x += self.font.size(self.lines[self.line_index].get_char_at(self.char_index -1 ))[0]
                     case pygame.K_DOWN:
                         if self.line_index < len(self.lines) - 1:
                             self.line_index += 1
                             self.cursor_y += self.text_height
+                            if self.char_index > self.lines[self.line_index].get_char_length() - 1:
+                                self.char_index = self.lines[self.line_index].get_char_length() - 1
+                                self.cursor_x = self.lines[self.line_index].get_pixel_length() + self.left_buffer
                     case pygame.K_UP:
                         if self.line_index >= 1:
                             self.line_index -= 1
