@@ -59,18 +59,18 @@ class TextBox:
                         self.line_index += 1
                     case pygame.K_BACKSPACE:
                         move_back = self.lines[self.line_index].remove_char(self.char_index)
-                        if move_back != -1:
+                        if move_back == -1:
                             # -1 indicates that there wasnt a char to remove
+                            if len(self.lines) > 1:
+                                self.lines.pop(self.line_index)
+                                self.line_index -= 1
+                                self.char_index = self.lines[self.line_index].get_char_length()
+                                print(self.line_index)
+                                self.cursor_x = self.lines[self.line_index].get_pixel_length() + self.left_buffer
+                                self.cursor_y -= self.text_height
+                        else:
                             self.cursor_x -= move_back
                             self.char_index -= 1
-                        # if len(self.text) > 0:
-                        #     c = self.text[self.cursor_index - 1]
-                        #     if c == '\n':
-                        #         self.cursor_y -= self.text_height
-                        #         self.cursor_x = self.line_ends
-                        #     else: self.cursor_x -= self.font.size(c)[0]
-                        #     self.text.pop(self.cursor_index - 1)
-                        #     self.cursor_index -= 1
                     case default:
                         self.lines[self.line_index].add_char_at(self.char_index, event.unicode)
                         self.char_index += 1
@@ -79,20 +79,22 @@ class TextBox:
 class Line:
     def __init__(self, font):
         self.font = font
-
         self.chars = []
-        self.length = 0
+        self.pixel_length = 0
 
-    def get_length(self):
-        return self.length
+    def get_pixel_length(self):
+        return self.pixel_length
+    
+    def get_char_length(self):
+        return len(self.chars)
 
     def add_char(self, c):
         self.chars.append(c)
-        self.length += self.font.size(c)[0]
+        self.pixel_length += self.font.size(c)[0]
     
     def add_char_at(self, index, c):
         self.chars.insert(index, c)
-        self.length += self.font.size(c)[0]
+        self.pixel_length += self.font.size(c)[0]
     
     def get_string(self):
         return ''.join(self.chars)
@@ -100,6 +102,6 @@ class Line:
     def remove_char(self, index):
         if index < 1: return -1
         c = self.chars[index - 1]
-        self.length -= self.font.size(c)[0]
+        self.pixel_length -= self.font.size(c)[0]
         self.chars.pop(index - 1)
         return self.font.size(c)[0]
