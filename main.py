@@ -26,6 +26,12 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         tb.process_event(event)
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            tb.mouse_press_down(pygame.mouse.get_pos())
+        if event.type == pygame.MOUSEBUTTONUP:
+            tb.mouse_up()
+    if pygame.mouse.get_pressed()[0]:
+        tb.process_mouse(pygame.mouse.get_pos())
     screen.fill((0, 0, 0))
     tb.draw(screen)
     pygame.display.flip()

@@ -96,31 +96,45 @@ class TextBox:
                             self.char_index -= 1
                     case pygame.K_LEFT:
                         if self.char_index >= 1:
+                            self.cursor_x -= self.font.size(self.lines[self.line_index].get_char_at(self.char_index - 1))[0]
                             self.char_index -= 1
-                            self.cursor_x -= self.font.size(self.lines[self.line_index].get_char_at(self.char_index))[0]
                     case pygame.K_RIGHT:
                         line_length = self.lines[self.line_index].get_char_length()
-                        if self.char_index < line_length - 1:
+                        if self.char_index < line_length:
+                            self.cursor_x += self.font.size(self.lines[self.line_index].get_char_at(self.char_index))[0]
                             self.char_index += 1
-                            self.cursor_x += self.font.size(self.lines[self.line_index].get_char_at(self.char_index -1 ))[0]
+                            print(self.char_index)
                     case pygame.K_DOWN:
                         if self.line_index < len(self.lines) - 1:
                             self.line_index += 1
                             self.cursor_y += self.text_height
                             if self.char_index > self.lines[self.line_index].get_char_length() - 1:
-                                self.char_index = self.lines[self.line_index].get_char_length() - 1
+                                self.char_index = self.lines[self.line_index].get_char_length()
                                 self.cursor_x = self.lines[self.line_index].get_pixel_length() + self.left_buffer
                     case pygame.K_UP:
                         if self.line_index >= 1:
                             self.line_index -= 1
                             self.cursor_y -= self.text_height
                             if self.char_index > self.lines[self.line_index].get_char_length() - 1:
-                                self.char_index = self.lines[self.line_index].get_char_length() - 1
+                                self.char_index = self.lines[self.line_index].get_char_length()
                                 self.cursor_x = self.lines[self.line_index].get_pixel_length() + self.left_buffer
                     case default:
                         self.lines[self.line_index].add_char_at(self.char_index, event.unicode)
                         self.char_index += 1
                         self.cursor_x += self.font.size(event.unicode)[0]
+                        print(self.char_index)
+
+    def mouse_press_down(self, mouse_pos):
+        self.x_scroll_bar.mouse_press_down(mouse_pos)
+        self.y_scroll_bar.mouse_press_down(mouse_pos)
+    
+    def mouse_up(self):
+        self.x_scroll_bar.mouse_up()
+        self.y_scroll_bar.mouse_up()
+    
+    def process_mouse(self, mouse_pos):
+        self.x_scroll_bar.process_mouse(mouse_pos)
+        self.y_scroll_bar.process_mouse(mouse_pos)
 
 class Line:
     def __init__(self, font):
