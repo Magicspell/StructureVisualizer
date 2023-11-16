@@ -24,7 +24,7 @@ class TextBox:
         self.char_index = 0
         self.focused = True
 
-        self.cursor_default_loc = (self.x + self.left_buffer, self.y + self.top_buffer)
+        self.cursor_default_loc = (self.left_buffer, self.top_buffer)
         self.cursor_x = self.cursor_default_loc[0]
         self.cursor_y = self.cursor_default_loc[1]
         self.cursor_width = 2
@@ -44,23 +44,28 @@ class TextBox:
 
     def draw(self, screen):
         # Draw background
-        rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        pygame.draw.rect(screen, self.background_color, rect)
-
+        # rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        # pygame.draw.rect(screen, self.background_color, rect)
+        background = pygame.Surface((self.width, self.height))
+        background.fill(self.background_color)
+        
         x_offset = self.x_scroll_bar.get_value() * self.width * -1
         y_offset = self.y_scroll_bar.get_value() * self.height * -1
 
-        # Draw all text characters
-        cur_x = self.x + self.left_buffer
-        cur_y = self.y + self.top_buffer
+        # Draw all text characters onto background
+        cur_x = self.left_buffer
+        cur_y = self.top_buffer
         for line in self.lines:
             line_surface = self.font.render(line.get_string(), True, self.text_color)
-            screen.blit(line_surface, (cur_x + x_offset, cur_y + y_offset))
+            background.blit(line_surface, (cur_x + x_offset, cur_y + y_offset))
             cur_y += self.text_height
             cur_x = self.x + self.left_buffer
+        
+        # Draw cursor onto background
+        if self.focused: background.blit(self.cursor_rect, (self.cursor_x + x_offset, self.cursor_y + y_offset))
 
-        # Draw cursor
-        if self.focused: screen.blit(self.cursor_rect, (self.cursor_x + x_offset, self.cursor_y + y_offset))
+        # Blit everything
+        screen.blit(background, (self.x, self.y))
 
         # Draw ScrollBars
         self.x_scroll_bar.draw(screen)
