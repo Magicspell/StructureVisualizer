@@ -1,6 +1,11 @@
 import pygame
 from ScrollBar import ScrollBar
 
+TOP_BUFFER = 20
+LEFT_BUFFER = 10
+CURSOR_WIDTH = 2
+SCROLL_BAR_WIDTH = 10
+
 class TextBox:
     def __init__(self, loc = (0,0), width = 500, height = 100, background_color = (200, 200, 200), text_color = (0, 0, 0), 
                 font_name = "freesansbold.ttf", text_size = 15, cursor_color = (0, 0, 0), scroll_bar_background = (30, 30, 30), 
@@ -14,8 +19,8 @@ class TextBox:
         self.text_color = text_color
         self.font_name = font_name
         self.text_size = text_size
-        self.top_buffer = 20
-        self.left_buffer = 10
+        self.top_buffer = TOP_BUFFER
+        self.left_buffer = LEFT_BUFFER
         self.font = pygame.font.SysFont(font_name, text_size)
         self.text_height = self.font.size("A")[1]
 
@@ -27,13 +32,13 @@ class TextBox:
         self.cursor_default_loc = (self.left_buffer, self.top_buffer)
         self.cursor_x = self.cursor_default_loc[0]
         self.cursor_y = self.cursor_default_loc[1]
-        self.cursor_width = 2
+        self.cursor_width = CURSOR_WIDTH
         self.cursor_height = self.text_height
         self.cursor_color = cursor_color
         self.cursor_rect = pygame.Surface((self.cursor_width, self.cursor_height))
         self.cursor_rect.fill(self.cursor_color)
 
-        self.scroll_bar_width = 10
+        self.scroll_bar_width = SCROLL_BAR_WIDTH
         self.scroll_bar_foreground = scroll_bar_foreground
         self.scroll_bar_background = scroll_bar_background
 
@@ -53,6 +58,7 @@ class TextBox:
         y_offset = self.y_scroll_bar.get_value() * self.height * -1
 
         # Draw all text characters onto background
+        # TODO: Optimize so text that is not on background is not iterated on.
         cur_x = self.left_buffer
         cur_y = self.top_buffer
         for line in self.lines:
@@ -108,11 +114,23 @@ class TextBox:
                         if self.char_index >= 1:
                             self.cursor_x -= self.font.size(self.lines[self.line_index].get_char_at(self.char_index - 1))[0]
                             self.char_index -= 1
+                        elif self.line_index > 0:
+                            # If we are at the front  of the current line AND we are not on the first line, go to prev line.
+                            self.line_index -= 1
+                            self.cursor_y -= self.text_height
+                            self.char_index = self.lines[self.line_index].get_char_length() - 1
+                            self.cursor_x = self.lines[self.line_index].get_pixel_length() + self.left_buffer
                     case pygame.K_RIGHT:
                         line_length = self.lines[self.line_index].get_char_length()
                         if self.char_index < line_length:
                             self.cursor_x += self.font.size(self.lines[self.line_index].get_char_at(self.char_index))[0]
                             self.char_index += 1
+                        elif self.line_index < len(self.lines) - 1:
+                            # If we are at the end of the current line AND we are not on the last line, go to next line.
+                            self.line_index += 1
+                            self.cursor_y += self.text_height
+                            self.char_index = 0
+                            self.cursor_x = self.cursor_default_loc[0]
                     case pygame.K_DOWN:
                         if self.line_index < len(self.lines) - 1:
                             self.line_index += 1
