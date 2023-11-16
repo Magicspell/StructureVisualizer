@@ -42,11 +42,21 @@ class ScrollBar:
             if self.vertical:
                 move_amount = mouse_pos[1] - self.prev_mouse_y
                 self.handle_y += move_amount
-                self.prev_mouse_y = mouse_pos[1]
+                if (self.handle_y + self.handle_length) > self.length:
+                    self.handle_y = (self.length - self.handle_length)
+                elif self.handle_y < 0:
+                    self.handle_y = 0
+                else:
+                    self.prev_mouse_y = mouse_pos[1]
             else:
                 move_amount = mouse_pos[0] - self.prev_mouse_x
                 self.handle_x += move_amount
-                self.prev_mouse_x = mouse_pos[0]
+                if (self.handle_x + self.handle_length) > self.length:
+                    self.handle_x = (self.length - self.handle_length)
+                elif self.handle_x < 0:
+                    self.handle_x = 0
+                else:
+                    self.prev_mouse_x = mouse_pos[0]
 
     def draw(self, screen):
         if self.vertical:
