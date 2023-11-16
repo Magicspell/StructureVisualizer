@@ -74,7 +74,13 @@ class TextBox:
                     case pygame.K_RETURN:
                         self.cursor_x = self.cursor_default_loc[0]
                         self.cursor_y += self.text_height
-                        self.lines.append(Line(self.font))
+
+                        # Split all characters after cursor to a new line and instert it.
+                        new_line = Line(self.font)
+                        chars = self.lines[self.line_index].get_chars()
+                        new_line.add_chars(chars[self.char_index:])
+                        self.lines[self.line_index].set_chars(chars[:self.char_index])
+                        self.lines.insert(self.line_index + 1, new_line)
                         self.char_index = 0
                         self.line_index += 1
                     case pygame.K_BACKSPACE:
@@ -103,7 +109,6 @@ class TextBox:
                         if self.char_index < line_length:
                             self.cursor_x += self.font.size(self.lines[self.line_index].get_char_at(self.char_index))[0]
                             self.char_index += 1
-                            print(self.char_index)
                     case pygame.K_DOWN:
                         if self.line_index < len(self.lines) - 1:
                             self.line_index += 1
@@ -122,7 +127,6 @@ class TextBox:
                         self.lines[self.line_index].add_char_at(self.char_index, event.unicode)
                         self.char_index += 1
                         self.cursor_x += self.font.size(event.unicode)[0]
-                        print(self.char_index)
 
     def mouse_press_down(self, mouse_pos):
         self.x_scroll_bar.mouse_press_down(mouse_pos)
@@ -153,6 +157,9 @@ class Line:
 
     def get_chars(self):
         return self.chars
+    
+    def set_chars(self, chars):
+        self.chars = chars
 
     def add_char(self, c):
         self.chars.append(c)
