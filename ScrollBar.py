@@ -19,7 +19,7 @@ class ScrollBar:
         self.prev_mouse_y = self.y
         self.mouse_down = False
 
-        self.value = 0  # Percentage (0 - 100)
+        self.value = 0  # Percentage (0 - 1)
     
     def get_value(self):
         return self.value
@@ -48,6 +48,7 @@ class ScrollBar:
                     self.handle_y = 0
                 else:
                     self.prev_mouse_y = mouse_pos[1]
+                    self.value += (move_amount / (self.length - self.handle_length))
             else:
                 move_amount = mouse_pos[0] - self.prev_mouse_x
                 self.handle_x += move_amount
@@ -57,6 +58,7 @@ class ScrollBar:
                     self.handle_x = 0
                 else:
                     self.prev_mouse_x = mouse_pos[0]
+                    self.value += (move_amount / (self.length - self.handle_length))
 
     def draw(self, screen):
         if self.vertical:

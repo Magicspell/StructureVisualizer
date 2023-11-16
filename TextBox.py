@@ -42,14 +42,13 @@ class TextBox:
         self.y_scroll_bar = ScrollBar((self.width - self.scroll_bar_width + self.x, self.y), self.scroll_bar_width,
             self.height, scroll_bar_foreground, scroll_bar_background, vertical=True)
 
-    
     def draw(self, screen):
         # Draw background
         rect = pygame.Rect(self.x, self.y, self.width, self.height)
         pygame.draw.rect(screen, self.background_color, rect)
 
-        x_offset = self.x_scroll_bar.get_value()
-        y_offset = self.y_scroll_bar.get_value()
+        x_offset = self.x_scroll_bar.get_value() * self.width * -1
+        y_offset = self.y_scroll_bar.get_value() * self.height * -1
 
         # Draw all text characters
         cur_x = self.x + self.left_buffer
@@ -139,7 +138,7 @@ class TextBox:
     def process_mouse(self, mouse_pos):
         self.x_scroll_bar.process_mouse(mouse_pos)
         self.y_scroll_bar.process_mouse(mouse_pos)
-
+    
 class Line:
     def __init__(self, font):
         self.font = font
