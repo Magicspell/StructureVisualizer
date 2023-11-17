@@ -7,6 +7,7 @@ CURSOR_WIDTH = 2
 SCROLL_BAR_WIDTH = 10
 UNICODE_MIN_BOUNDS = 0x0020
 UNICODE_MAX_BOUNDS = 0x007e
+BREAK_CHARACTERS = [' ', '[', ']', '.']
 
 class TextBox:
     def __init__(self, loc = (0,0), width = 500, height = 100, background_color = (200, 200, 200), text_color = (0, 0, 0), 
@@ -186,7 +187,7 @@ class Line:
         self.font = font
         self.chars = []
         self.pixel_length = 0
-        self.break_characters_indexes = [0]
+        self.break_characters_indexes = [-1]
 
     def get_pixel_length(self):
         return self.get_pixel_length_at(len(self.chars))
@@ -212,7 +213,7 @@ class Line:
     def add_char_at(self, index, c):
         self.chars.insert(index, c)
         self.pixel_length += self.font.size(c)[0]
-        if c == ' ':
+        if c in BREAK_CHARACTERS:
             self.break_characters_indexes.append(index)   # We keep track of all spaces for ctrl+backspace
             self.break_characters_indexes.sort(reverse=True)
 
@@ -234,8 +235,12 @@ class Line:
         for b in self.break_characters_indexes:
             if index >= b:
                 if len(self.chars) == 0: return -1
-                self.chars = self.chars[:b] + self.chars[index:]
-                if b != 0: self.break_characters_indexes.pop(i)
-                return b
+                if b != -1:
+                    self.chars = self.chars[:b + 1] + self.chars[index:]
+                    self.break_characters_indexes.pop(i)
+                    return b + 1
+                else:
+                    self.chars = self.chars[index:]
+                    return 0
             i += 1
         return index
