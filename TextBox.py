@@ -7,7 +7,7 @@ CURSOR_WIDTH = 2
 SCROLL_BAR_WIDTH = 10
 UNICODE_MIN_BOUNDS = 0x0020
 UNICODE_MAX_BOUNDS = 0x007e
-BREAK_CHARACTERS = [' ', '[', ']', '.']
+BREAK_CHARACTERS = [' ', '[', ']', '{', '}', '|', '\\', ':', ';', '"', '\'', '.', '>', ',', '<', '?', '/', '(', ')', '&']
 
 class TextBox:
     def __init__(self, loc = (0,0), width = 500, height = 100, background_color = (200, 200, 200), text_color = (0, 0, 0), 
