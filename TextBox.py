@@ -150,7 +150,7 @@ class TextBox:
                     case default:
                         # Check to make sure the unicode (get code with ord()) is within bounds of ok characters
                         # (and length is more than 1, cause shift causes unicode = '' for some reason).
-                        if len(event.unicode) > 0 and ord(event.unicode) > UNICODE_MIN_BOUNDS and ord(event.unicode) < UNICODE_MAX_BOUNDS:
+                        if len(event.unicode) > 0 and ord(event.unicode) >= UNICODE_MIN_BOUNDS and ord(event.unicode) <= UNICODE_MAX_BOUNDS:
                             self.lines[self.line_index].add_char_at(self.char_index, event.unicode)
                             self.char_index += 1
                             self.cursor_x += self.font.size(event.unicode)[0]
