@@ -5,6 +5,8 @@ TOP_BUFFER = 20
 LEFT_BUFFER = 10
 CURSOR_WIDTH = 2
 SCROLL_BAR_WIDTH = 10
+UNICODE_MIN_BOUNDS = 0x0020
+UNICODE_MAX_BOUNDS = 0x007e
 
 class TextBox:
     def __init__(self, loc = (0,0), width = 500, height = 100, background_color = (200, 200, 200), text_color = (0, 0, 0), 
@@ -146,9 +148,26 @@ class TextBox:
                                 self.char_index = self.lines[self.line_index].get_char_length()
                                 self.cursor_x = self.lines[self.line_index].get_pixel_length() + self.left_buffer
                     case default:
-                        self.lines[self.line_index].add_char_at(self.char_index, event.unicode)
-                        self.char_index += 1
-                        self.cursor_x += self.font.size(event.unicode)[0]
+                        # Check to make sure the unicode (get code with ord()) is within bounds of ok characters
+                        # (and length is more than 1, cause shift causes unicode = '' for some reason).
+                        if len(event.unicode) > 0 and ord(event.unicode) > UNICODE_MIN_BOUNDS and ord(event.unicode) < UNICODE_MAX_BOUNDS:
+                            self.lines[self.line_index].add_char_at(self.char_index, event.unicode)
+                            self.char_index += 1
+                            self.cursor_x += self.font.size(event.unicode)[0]
+                # print(f'{self.lines[self.line_index].chars}')
+                        
+    def delete_line(self, index):
+        # Deletes a line, and if there are remaining characters, adds them to prev line.
+        if self.line_index > 0:
+            # Set char index to end of previous line.
+            self.char_index = self.lines[self.line_index - 1].get_char_length()
+            self.cursor_x = self.lines[self.line_index - 1].get_pixel_length() + self.left_buffer
+
+            # Add all remaining chars from current line to previous line.
+            self.lines[self.line_index -1].add_chars(self.lines[self.line_index].get_chars())
+            self.lines.pop(self.line_index)
+            self.line_index -= 1
+            self.cursor_y -= self.text_height
 
     def mouse_press_down(self, mouse_pos):
         self.x_scroll_bar.mouse_press_down(mouse_pos)
