@@ -186,9 +186,10 @@ class Line:
         self.font = font
         self.chars = []
         self.pixel_length = 0
+        self.break_characters_indexes = [0]
 
     def get_pixel_length(self):
-        return self.pixel_length
+        return self.get_pixel_length_at(len(self.chars))
     
     def get_pixel_length_at(self, index):
         return self.font.size(''.join(self.chars[:index]))[0]
