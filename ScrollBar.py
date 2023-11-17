@@ -1,7 +1,7 @@
 import pygame
 
 class ScrollBar:
-    def __init__(self, loc = (0,0), width = 10, length = 100, foreground_color = (255, 255, 255), background_color = (0, 0, 0), vertical = True):
+    def __init__(self, loc = (0,0), width = 10, length = 100, foreground_color = (255, 255, 255), background_color = (0, 0, 0), vertical = True, active = True):
         self.x = loc[0]
         self.y = loc[1]
         self.width = width
@@ -20,11 +20,14 @@ class ScrollBar:
         self.mouse_down = False
 
         self.value = 0  # Percentage (0 - 1)
+
+        self.active = active
     
     def get_value(self):
         return self.value
     
     def mouse_press_down(self, mouse_pos):
+        if not self.active: return
         if self.vertical:
             if mouse_pos[0] > self.x and mouse_pos[0] < (self.x + self.width):
                 self.prev_mouse_y = mouse_pos[1]
@@ -38,6 +41,7 @@ class ScrollBar:
         self.mouse_down = False
     
     def process_mouse(self, mouse_pos):
+        if not self.active: return
         if self.mouse_down:
             if self.vertical:
                 move_amount = mouse_pos[1] - self.prev_mouse_y
@@ -61,6 +65,7 @@ class ScrollBar:
                     self.value += (move_amount / (self.length - self.handle_length))
 
     def draw(self, screen):
+        if not self.active: return
         if self.vertical:
             # Draw background
             rect = pygame.Rect(self.x, self.y, self.width, self.length)
@@ -77,3 +82,6 @@ class ScrollBar:
             # Draw handle
             rect = pygame.Rect(self.handle_x + self.x, self.handle_y + self.y, self.handle_length, self.handle_width)
             pygame.draw.rect(screen, self.foreground_color, rect)
+
+    def set_active(self, value):
+        self.active = value

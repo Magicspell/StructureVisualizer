@@ -41,14 +41,17 @@ class TextBox:
         self.cursor_rect = pygame.Surface((self.cursor_width, self.cursor_height))
         self.cursor_rect.fill(self.cursor_color)
 
+        self.max_x_pixel_length = 0
+        self.max_y_pixel_length = 0
+
         self.scroll_bar_width = SCROLL_BAR_WIDTH
         self.scroll_bar_foreground = scroll_bar_foreground
         self.scroll_bar_background = scroll_bar_background
 
         self.x_scroll_bar = ScrollBar((self.x, self.height - self.scroll_bar_width + self.y), self.scroll_bar_width,
-            self.width, scroll_bar_foreground, scroll_bar_background, vertical=False)
+            self.width, scroll_bar_foreground, scroll_bar_background, vertical=False, active=False)
         self.y_scroll_bar = ScrollBar((self.width - self.scroll_bar_width + self.x, self.y), self.scroll_bar_width,
-            self.height, scroll_bar_foreground, scroll_bar_background, vertical=True)
+            self.height, scroll_bar_foreground, scroll_bar_background, vertical=True, active=False)
 
     def draw(self, screen):
         # Draw background
@@ -76,7 +79,12 @@ class TextBox:
         # Blit everything
         screen.blit(background, (self.x, self.y))
 
-        # Draw ScrollBars
+        # Set ScrollBars active if we are going over the screen.
+        # TODO: I dont think this should be in draw(), but didn't want to make an update() function just for this.
+        if self.max_x_pixel_length + self.left_buffer > self.width: self.x_scroll_bar.set_active(True)
+        if self.max_y_pixel_length + self.top_buffer > self.height: self.y_scroll_bar.set_active(True)
+
+        # Draw ScrollBars. Does not draw if not active.
         self.x_scroll_bar.draw(screen)
         self.y_scroll_bar.draw(screen)
 
@@ -155,8 +163,12 @@ class TextBox:
                             self.lines[self.line_index].add_char_at(self.char_index, event.unicode)
                             self.char_index += 1
                             self.cursor_x += self.font.size(event.unicode)[0]
-                # print(f'{self.lines[self.line_index].chars}')
-                        
+                # TODO: doest update for deleting characters/line
+                if self.lines[self.line_index].get_pixel_length() > self.max_x_pixel_length:
+                    self.max_x_pixel_length = self.lines[self.line_index].get_pixel_length()
+                if len(self.lines) * self.text_height > self.max_y_pixel_length:
+                    self.max_y_pixel_length = len(self.lines) * self.text_height
+
     def delete_line(self, index):
         # Deletes a line, and if there are remaining characters, adds them to prev line.
         if self.line_index > 0:
