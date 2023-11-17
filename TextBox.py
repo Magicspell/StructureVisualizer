@@ -96,22 +96,22 @@ class TextBox:
                         self.char_index = 0
                         self.line_index += 1
                     case pygame.K_BACKSPACE:
-                        move_back = self.lines[self.line_index].remove_char(self.char_index)
-                        if move_back == -1:
-                            # -1 indicates that there wasnt a char to remove
-                            if self.line_index > 0:
-                                # Set char index to end of previous line.
-                                self.char_index = self.lines[self.line_index - 1].get_char_length()
-                                self.cursor_x = self.lines[self.line_index - 1].get_pixel_length() + self.left_buffer
-
-                                # Add all remaining chars from current line to previous line.
-                                self.lines[self.line_index -1].add_chars(self.lines[self.line_index].get_chars())
-                                self.lines.pop(self.line_index)
-                                self.line_index -= 1
-                                self.cursor_y -= self.text_height
+                        if pygame.key.get_pressed()[pygame.K_LCTRL] or pygame.key.get_pressed()[pygame.K_RCTRL]:
+                            new_index = self.lines[self.line_index].remove_to_break_char(self.char_index)
+                            if new_index == -1:
+                                # -1 indicates that there wasnt a character to remove
+                                self.delete_line(self.line_index)
+                            else:
+                                self.char_index = new_index
+                                self.cursor_x = self.lines[self.line_index].get_pixel_length_at(self.char_index) + self.left_buffer
                         else:
-                            self.cursor_x -= move_back
-                            self.char_index -= 1
+                            move_back = self.lines[self.line_index].remove_char(self.char_index)
+                            if move_back == -1:
+                                # -1 indicates that there wasnt a char to remove
+                                self.delete_line(self.line_index)
+                            else:
+                                self.cursor_x -= move_back
+                                self.char_index -= 1
                     case pygame.K_LEFT:
                         if self.char_index >= 1:
                             self.cursor_x -= self.font.size(self.lines[self.line_index].get_char_at(self.char_index - 1))[0]
@@ -204,8 +204,7 @@ class Line:
         self.chars = chars
 
     def add_char(self, c):
-        self.chars.append(c)
-        self.pixel_length += self.font.size(c)[0]
+        self.add_char_at(len(self.chars) - 1, c)
         
     def add_chars(self, chars):
         self.chars += chars
@@ -213,6 +212,9 @@ class Line:
     def add_char_at(self, index, c):
         self.chars.insert(index, c)
         self.pixel_length += self.font.size(c)[0]
+        if c == ' ':
+            self.break_characters_indexes.append(index)   # We keep track of all spaces for ctrl+backspace
+            self.break_characters_indexes.sort(reverse=True)
 
     def get_char_at(self, index):
         return self.chars[index]
@@ -226,3 +228,14 @@ class Line:
         self.pixel_length -= self.font.size(c)[0]
         self.chars.pop(index - 1)
         return self.font.size(c)[0]
+
+    def remove_to_break_char(self, index):
+        i = 0
+        for b in self.break_characters_indexes:
+            if index >= b:
+                if len(self.chars) == 0: return -1
+                self.chars = self.chars[:b] + self.chars[index:]
+                if b != 0: self.break_characters_indexes.pop(i)
+                return b
+            i += 1
+        return index
