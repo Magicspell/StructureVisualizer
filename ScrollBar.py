@@ -9,6 +9,7 @@ class ScrollBar:
         self.foreground_color = foreground_color
         self.background_color = background_color
         self.vertical = vertical
+        self.active = active
 
         self.handle_x = 0   # Relative
         self.handle_y = 0   # Relative
@@ -21,7 +22,6 @@ class ScrollBar:
 
         self.value = 0  # Percentage (0 - 1)
 
-        self.active = active
     
     def get_value(self):
         return self.value

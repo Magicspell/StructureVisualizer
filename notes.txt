@@ -1,1 +1,12 @@
 cpp sdl
+
+
+Example Syntax:
+MyClass
+MyChildClass(MyClass)
+
+MyClass.age = Integer
+MyChildClass.name = String
+MyChildClass.randomThing = MyOtherClass
+
+MyOtherClass

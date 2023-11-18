@@ -6,7 +6,7 @@ pygame.display.set_caption(f'StructureVisualizer')
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.init()
 
-TB_BACKGROUND_COLOR = (30, 30, 30)
+TB_BACKGROUND_COLOR = (30, 38, 42)
 TB_WIDTH = WIDTH
 TB_HEIGHT = HEIGHT / 3
 TB_LOC = (0, HEIGHT - TB_HEIGHT)
@@ -14,8 +14,12 @@ TB_TEXT_COLOR = (240, 240, 240)
 TB_FONT = "consolas"
 TB_TEXT_SIZE = 18
 TB_CURSOR_COLOR = TB_TEXT_COLOR
-SC_FOREGROUND_COLOR = (210, 210, 210)
-SC_BACKGROUND_COLOR = (50, 50, 50)
+SC_FOREGROUND_COLOR = (200, 210, 215)
+SC_BACKGROUND_COLOR = (
+    TB_BACKGROUND_COLOR[0] - 5,
+    TB_BACKGROUND_COLOR[1] - 5,
+    TB_BACKGROUND_COLOR[2] - 5
+)
 
 running = True
 

@@ -1,5 +1,6 @@
 import pygame
 from ScrollBar import ScrollBar
+from TextParser import TextParser
 
 TOP_BUFFER = 20
 LEFT_BUFFER = 10
@@ -52,6 +53,8 @@ class TextBox:
             self.width, scroll_bar_foreground, scroll_bar_background, vertical=False, active=False)
         self.y_scroll_bar = ScrollBar((self.width - self.scroll_bar_width + self.x, self.y), self.scroll_bar_width,
             self.height, scroll_bar_foreground, scroll_bar_background, vertical=True, active=False)
+        
+        self.tp = TextParser()
 
     def draw(self, screen):
         # Draw background
@@ -163,6 +166,7 @@ class TextBox:
                             self.lines[self.line_index].add_char_at(self.char_index, event.unicode)
                             self.char_index += 1
                             self.cursor_x += self.font.size(event.unicode)[0]
+                self.tp.parse_line(self.lines[self.line_index])
                 # TODO: doest update for deleting characters/line
                 if self.lines[self.line_index].get_pixel_length() > self.max_x_pixel_length:
                     self.max_x_pixel_length = self.lines[self.line_index].get_pixel_length()
@@ -201,6 +205,10 @@ class Line:
         self.pixel_length = 0
         self.break_characters_indexes = [-1]
 
+        # Cheater values for faster parsing.
+        self.period_count = 0
+        self.equals_count = 0
+
     def get_pixel_length(self):
         return self.get_pixel_length_at(len(self.chars))
     
@@ -215,12 +223,13 @@ class Line:
     
     def set_chars(self, chars):
         self.chars = chars
+        self.update_parsing_info()
 
     def add_char(self, c):
         self.add_char_at(len(self.chars) - 1, c)
         
     def add_chars(self, chars):
-        self.chars += chars
+        self.set_chars(self.chars + chars)
 
     def add_char_at(self, index, c):
         self.chars.insert(index, c)
@@ -228,6 +237,8 @@ class Line:
         if c in BREAK_CHARACTERS:
             self.break_characters_indexes.append(index)   # We keep track of all spaces for ctrl+backspace
             self.break_characters_indexes.sort(reverse=True)
+        if c == '.': self.period_count += 1
+        if c == '=': self.equals_count += 1
 
     def get_char_at(self, index):
         return self.chars[index]
@@ -239,6 +250,8 @@ class Line:
         if index < 1: return -1
         c = self.chars[index - 1]
         self.pixel_length -= self.font.size(c)[0]
+        if self.chars[index - 1] == '.': self.period_count -= 1
+        if self.chars[index - 1] == '=': self.equals_count -= 1
         self.chars.pop(index - 1)
         return self.font.size(c)[0]
 
@@ -250,9 +263,25 @@ class Line:
                 if b != -1:
                     self.chars = self.chars[:b + 1] + self.chars[index:]
                     self.break_characters_indexes.pop(i)
+                    self.update_parsing_info()
                     return b + 1
                 else:
                     self.chars = self.chars[index:]
+                    self.update_parsing_info()
                     return 0
             i += 1
         return index
+
+    def update_parsing_info(self):
+        # Used when we have to iterate to find out info.
+        self.period_count = 0
+        self.equals_count = 0
+        for c in self.chars:
+            if c == '.': self.period_count += 1
+            if c == '=': self.equals_count += 1
+
+    def get_period_count(self):
+        return self.period_count
+    
+    def get_equals_count(self):
+        return self.equals_count
