@@ -21,7 +21,6 @@ node_width = 10
 node_height = 10
 
 def draw_node(n):
-    If not n.drawn:
         n.draw(cur_x, cur_y)
         n.drawn = true
         For c in n.attributes:
@@ -33,6 +32,7 @@ def draw_node(n):
         cur_x += node_width + x_buffer
 
 For n in nodes:
-    draw_node(n)
-    for p in node.parents:
-        draw_node(p)
+   If not n.drawn:
+       draw_node(n)
+       for p in node.parents:
+            draw_node(p)
