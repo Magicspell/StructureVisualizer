@@ -20,7 +20,7 @@ cur_y = y + y_buffer
 node_width = 10
 node_height = 10
 
-For n in nodes:
+def draw_node(n):
     If not n.drawn:
         n.draw(cur_x, cur_y)
         n.drawn = true
@@ -28,7 +28,9 @@ For n in nodes:
             if not c.drawn:
                 cur_x += node_width + x_buffer
                 cur_y += node_height + y_buffer
-                c.draw(cur_x, cur_y)
-                c.drawn = true
+                draw_node(c)
             draw_arrow(n, c)
         cur_x += node_width + x_buffer
+
+For n in nodes:
+    draw_node(n)
