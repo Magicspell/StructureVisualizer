@@ -34,3 +34,5 @@ def draw_node(n):
 
 For n in nodes:
     draw_node(n)
+    for p in node.parents:
+        draw_node(p)
