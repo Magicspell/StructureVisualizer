@@ -61,19 +61,18 @@ class Graphics(Widget):
                 for p in n.parents:
                     if not p.drawn:
                         cur_x = self.update_node(p, cur_x, cur_y)
-                cur_x += self.x_buffer + n.width
 
     # Recursive helper for update()
     def update_node(self, n, cur_x, cur_y):
         n.x = cur_x
         n.y = cur_y
 
-        new_x = cur_x
+        new_x = cur_x + n.width + self.x_buffer
         new_y = cur_y + self.node_height + self.y_buffer
 
         for c in n.children:
             if not c.drawn:
-                new_x = self.update_node(c, new_x + n.width + self.x_buffer, new_y)
+                new_x = self.update_node(c, new_x, new_y)
                 c.drawn = True
             self.arrows.append((n.get_lower_right(), c.get_upper_left()))
         n.drawn = True
