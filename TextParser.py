@@ -25,7 +25,7 @@ class TextParser:
                 if len(word_array) == 2:
                     parent_class = word_array[0]
                     child_class = word_array[1]
-                    if parent_class in self.classes.keys():
+                    if parent_class in self.classes.keys() and child_class != "":
                         self.classes[child_class] = ParserClass(self.classes[parent_class], parent_class)
 
     def parse_line_for_attributes(self, line):
