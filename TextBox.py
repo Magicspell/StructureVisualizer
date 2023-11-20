@@ -195,6 +195,9 @@ class TextBox(Widget):
         self.x_scroll_bar.process_mouse(mouse_pos)
         self.y_scroll_bar.process_mouse(mouse_pos)
     
+    def get_lines(self):
+        return self.lines
+    
 class Line:
     def __init__(self, font):
         self.font = font

@@ -1,11 +1,131 @@
+import pygame
 from Widget import Widget
 
+X_BUFFER = 10
+Y_BUFFER = 10
+NODE_WIDTH = 20
+NODE_HEIGHT = 20
+
 class Graphics(Widget):
-    def __init__(self, loc = (0, 0), width = 100, height = 100, background_color = (0, 0, 0), node_color = (255, 255, 255)) -> None:
+    def __init__(self, text_parser, loc = (0, 0), width = 100, height = 100, background_color = (0, 0, 0),
+            node_color = (255, 255, 255), arrow_color = (255, 255, 255), font_name = "freesansbold.tff"):
+        
         super().__init__(loc, width, height, background_color)
         self.node_color = node_color
+        self.arrow_color = arrow_color
+        self.font_name = font_name
+
+        self.x_buffer = X_BUFFER
+        self.y_buffer = Y_BUFFER
+        self.node_width = NODE_WIDTH
+        self.node_height = NODE_HEIGHT
         
-        self.nodes = []
+        self.text_parser = text_parser
+        self.nodes = {} # String name, TextParser.ParserClass value
+        self.arrows = []
     
     def draw(self, screen):
         super().draw(screen)
+        for a in self.arrows:
+            self.draw_arrow(screen, a[0], a[1])
+        for n in self.nodes.values():
+            n.draw(screen)
+
+    def update(self, lines):
+        self.text_parser.parse_lines(lines)
+        self.nodes = {}
+        self.arrows = []
+
+        classes = self.text_parser.get_classes()
+        # Update nodes
+        for c in classes.keys():
+            self.nodes[c] = Node(name=c, class_obj=classes[c], font_name=self.font_name)
+
+        # Create all parent/child relationships for nodes
+        for n in self.nodes.values():
+            for c in n.class_obj.attributes.values():
+                if c in self.nodes.keys():
+                    # Append child
+                    n.children.append(self.nodes[c])
+
+                    # Append parent
+                    self.nodes[c].parents.append(n)
+
+        cur_x = self.x + self.x_buffer
+        cur_y = self.y + self.y_buffer
+        for n in self.nodes.values():
+            if not n.drawn:
+                cur_x = self.update_node(n, cur_x, cur_y)
+                for p in n.parents:
+                    if not p.drawn:
+                        cur_x = self.update_node(p, cur_x, cur_y)
+                cur_x += self.x_buffer + n.width
+
+    # Recursive helper for update()
+    def update_node(self, n, cur_x, cur_y):
+        n.x = cur_x
+        n.y = cur_y
+
+        new_x = cur_x
+        new_y = cur_y + self.node_height + self.y_buffer
+
+        for c in n.children:
+            if not c.drawn:
+                new_x = self.update_node(c, new_x + c.width + self.x_buffer, new_y)
+                c.drawn = True
+            self.arrows.append((n.get_lower_right(), c.get_upper_left()))
+        n.drawn = True
+        return new_x
+
+    # Draws an arrow from two nodes
+    def draw_arrow(self, screen, start, end):
+        pygame.draw.line(
+            screen,
+            self.arrow_color,
+            start,
+            end
+        )
+
+class Node:
+    def __init__(self, loc = (0, 0), width = NODE_WIDTH, height = NODE_HEIGHT,
+            background_color = (220, 75, 75), name = "PLACEHOLDER", class_obj = None,
+            font_name = "freesansbold.tff", text_color = (0, 0, 0), auto_width = True):
+
+        self.x = loc[0]
+        self.y = loc[1]
+        self.height = height
+        self.background_color = background_color
+        self.name = name
+        self.class_obj = class_obj
+        self.font = pygame.font.SysFont(font_name, width)
+        self.text_color = text_color
+
+        self.drawn = False
+        self.children = []  # List of nodes
+        self.parents = []   # List of nodes
+        self.text_x_buffer = 5
+        self.text_y_buffer = 2
+        
+        self.text_surface = self.font.render(self.name, True, self.text_color)
+
+        self.width = 0
+        if not auto_width: self.width = width
+        else: self.width = self.text_surface.get_width() + self.text_x_buffer * 2
+
+        self.surface = pygame.Surface((self.width, self.height))
+        self.surface.fill(self.background_color)
+
+    def draw(self, screen):
+        screen.blit(self.surface, (self.x, self.y))
+        screen.blit(self.text_surface, (self.x + self.text_x_buffer, self.y + self.text_y_buffer))
+    
+    # Returns coords of lower right corner for arrow drawing.
+    def get_lower_right(self):
+        return (
+            self.x + self.width,
+            self.y + self.height
+        )
+
+    # Returns coords of upper left corner for arrow drawing.
+    def get_upper_left(self):
+        return (self.x, self.y)

@@ -1,5 +1,5 @@
 import pygame
-from TextBox import TextBox
+from TextBox import TextBox, Line
 from Graphics import Graphics
 
 pygame.display.set_caption(f'StructureVisualizer')
@@ -34,7 +34,20 @@ GR_LOC = (0, 0)
 running = True
 
 tb = TextBox(TB_LOC, TB_WIDTH, TB_HEIGHT, TB_BACKGROUND_COLOR, TB_TEXT_COLOR, TB_FONT, TB_TEXT_SIZE, TB_CURSOR_COLOR, SC_BACKGROUND_COLOR, SC_FOREGROUND_COLOR)
-gr = Graphics(GR_LOC, GR_WIDTH, GR_HEIGHT, GR_BACKGROUND_COLOR, GR_NODE_COLOR)
+gr = Graphics(tb.tp, GR_LOC, GR_WIDTH, GR_HEIGHT, GR_BACKGROUND_COLOR, GR_NODE_COLOR, (255, 255, 255), TB_FONT)
+
+# l1 = Line(tb.font)
+# l2 = Line(tb.font)
+# l3 = Line(tb.font)
+# l1.add_chars(
+#     ['a']
+# )
+# l2.add_chars(
+#     ['a', '.', 'b', '=', 'c']
+# )
+# l3.add_chars(
+#     ['c']
+# )
 
 while running:
     for event in pygame.event.get():
@@ -47,6 +60,7 @@ while running:
             tb.mouse_up()
     if pygame.mouse.get_pressed()[0]:
         tb.process_mouse(pygame.mouse.get_pos())
+    gr.update(tb.get_lines())
     screen.fill((0, 0, 0))
     tb.draw(screen)
     gr.draw(screen)
