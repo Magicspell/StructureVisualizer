@@ -25,11 +25,16 @@ class Graphics(Widget):
         self.arrows = []
     
     def draw(self, screen):
+        # Fill background
         super().draw(screen)
+
+        # Draw nodes and arrows onto background
         for a in self.arrows:
-            self.draw_arrow(screen, a[0], a[1])
+            self.draw_arrow(self.background_surface, a[0], a[1])
         for n in self.nodes.values():
-            n.draw(screen)
+            n.draw(self.background_surface)
+
+        screen.blit(self.background_surface, (self.x, self.y))
 
     def update(self, lines):
         self.text_parser.parse_lines(lines)
@@ -75,9 +80,9 @@ class Graphics(Widget):
         return new_x
 
     # Draws an arrow from two nodes
-    def draw_arrow(self, screen, start, end):
+    def draw_arrow(self, surface, start, end):
         pygame.draw.line(
-            screen,
+            surface,
             self.arrow_color,
             start,
             end
@@ -112,9 +117,9 @@ class Node:
         self.surface = pygame.Surface((self.width, self.height))
         self.surface.fill(self.background_color)
 
-    def draw(self, screen):
-        screen.blit(self.surface, (self.x, self.y))
-        screen.blit(self.text_surface, (self.x + self.text_x_buffer, self.y + self.text_y_buffer))
+    def draw(self, surface):
+        surface.blit(self.surface, (self.x, self.y))
+        surface.blit(self.text_surface, (self.x + self.text_x_buffer, self.y + self.text_y_buffer))
     
     # Returns coords of lower right corner for arrow drawing.
     def get_lower_right(self):

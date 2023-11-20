@@ -10,12 +10,11 @@ class Widget:
         self.height = height
         self.background_color = background_color
 
+        self.background_surface = pygame.Surface((self.width, self.height))
+
     def draw(self, screen):
         # Draw background
-        background = pygame.Surface((self.width, self.height))
-        background.fill(self.background_color)
-
-        screen.blit(background, (self.x, self.y))
+        self.background_surface.fill(self.background_color)
 
     def update(self):
         pass
