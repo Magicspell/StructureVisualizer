@@ -2,13 +2,23 @@ class TextParser:
     def __init__(self):
         self.classes = {}   # String name, ParserClass value
 
-    def parse_line(self, line):
+    def parse_text(self, lines):
+        # Note: we seperate definitions and attributes so they dont need to be in order.
+        for l in lines:
+            self.parse_line_for_definitions(l)
+        for l in lines:
+            self.parse_line_for_attributes(l)
+
+    def parse_line_for_definitions(self, line):
         line_string = line.get_string()
         if line.get_period_count() == 0 and line.get_equals_count() == 0:
             # Class definition case, where we just take the first word (throw if spaces?) and add it as a new class
             if line_string.find(" ") == -1: self.classes[line_string] = ParserClass()
             print(f"Class Name: {line_string}")
-        elif line.get_period_count() == 1 and line.get_equals_count() == 1:
+
+    def parse_line_for_attributes(self, line):
+        line_string = line.get_string()
+        if line.get_period_count() == 1 and line.get_equals_count() == 1:
             # Attribute definition case, where we add an attribute to a class
             class_name = line_string[:line_string.find(".")]
             attribute_name = line_string[line_string.find(".") + 1:line_string.find("=")]

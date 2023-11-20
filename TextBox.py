@@ -1,6 +1,7 @@
 import pygame
 from ScrollBar import ScrollBar
 from TextParser import TextParser
+from Widget import Widget
 
 TOP_BUFFER = 20
 LEFT_BUFFER = 10
@@ -10,15 +11,11 @@ UNICODE_MIN_BOUNDS = 0x0020
 UNICODE_MAX_BOUNDS = 0x007e
 BREAK_CHARACTERS = [' ', '[', ']', '{', '}', '|', '\\', ':', ';', '"', '\'', '.', '>', ',', '<', '?', '/', '(', ')', '&']
 
-class TextBox:
+class TextBox(Widget):
     def __init__(self, loc = (0,0), width = 500, height = 100, background_color = (200, 200, 200), text_color = (0, 0, 0), 
                 font_name = "freesansbold.ttf", text_size = 15, cursor_color = (0, 0, 0), scroll_bar_background = (30, 30, 30), 
                 scroll_bar_foreground = (200, 200, 200)):
-        self.x = loc[0]
-        self.y = loc[1]
-        self.width = width
-        self.height = height
-        self.background_color = background_color
+        super().__init__(loc, width, height, background_color)
 
         self.text_color = text_color
         self.font_name = font_name
@@ -166,7 +163,7 @@ class TextBox:
                             self.lines[self.line_index].add_char_at(self.char_index, event.unicode)
                             self.char_index += 1
                             self.cursor_x += self.font.size(event.unicode)[0]
-                self.tp.parse_line(self.lines[self.line_index])
+                # self.tp.parse_line(self.lines[self.line_index])
                 # TODO: doest update for deleting characters/line
                 if self.lines[self.line_index].get_pixel_length() > self.max_x_pixel_length:
                     self.max_x_pixel_length = self.lines[self.line_index].get_pixel_length()
