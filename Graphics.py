@@ -44,7 +44,7 @@ class Graphics(Widget):
         classes = self.text_parser.get_classes()
         # Update nodes
         for c in classes.keys():
-            self.nodes[c] = Node(name=c, class_obj=classes[c], font_name=self.font_name)
+            self.nodes[c] = Node(name=c, class_obj=classes[c], font_name=self.font_name, attributes=classes[c].get_attributes())
 
         # Create all parent/child relationships for nodes
         for n in self.nodes.values():
@@ -57,26 +57,26 @@ class Graphics(Widget):
         cur_y = self.y + self.y_buffer
         for n in self.nodes.values():
             if not n.drawn:
-                cur_x = self.update_node(n, cur_x, cur_y)
+                cur_x = self.update_node(n, cur_x, cur_y)[0]    # Update only x so we stay on same y level (0).
                 for p in n.parents:
                     if not p.drawn:
-                        cur_x = self.update_node(p, cur_x, cur_y)
+                        cur_x = self.update_node(p, cur_x, cur_y)[0]
 
-    # Recursive helper for update()
+    # Recursive helper for update(), returns new updated coords for next node as (x, y)
     def update_node(self, n, cur_x, cur_y):
         n.x = cur_x
         n.y = cur_y
 
         new_x = cur_x + n.width + self.x_buffer
-        new_y = cur_y + self.node_height + self.y_buffer
+        new_y = cur_y + n.height + self.y_buffer
 
         for c in n.children:
             if not c.drawn:
-                new_x = self.update_node(c, new_x, new_y)
+                new_x = self.update_node(c, new_x, new_y)[0]  # Update only x so we stay on same y level.
                 c.drawn = True
             self.arrows.append((n.get_lower_right(), c.get_upper_left()))
         n.drawn = True
-        return new_x
+        return (new_x, new_y)
 
     # Draws an arrow from two nodes
     def draw_arrow(self, surface, start, end):
@@ -90,7 +90,8 @@ class Graphics(Widget):
 class Node:
     def __init__(self, loc = (0, 0), width = NODE_WIDTH, height = NODE_HEIGHT,
             background_color = (220, 75, 75), name = "PLACEHOLDER", class_obj = None,
-            font_name = "freesansbold.tff", text_color = (0, 0, 0), auto_width = True):
+            font_name = "freesansbold.tff", text_color = (0, 0, 0), auto_width = True,
+            attributes = {}):
 
         self.x = loc[0]
         self.y = loc[1]
@@ -106,6 +107,8 @@ class Node:
         self.parents = []   # List of nodes
         self.text_x_buffer = 5
         self.text_y_buffer = 2
+
+        self.attributes = attributes    # String name, String name_of_class
         
         self.text_surface = self.font.render(self.name, True, self.text_color)
 
