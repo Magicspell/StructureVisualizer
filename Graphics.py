@@ -43,13 +43,10 @@ class Graphics(Widget):
 
         # Create all parent/child relationships for nodes
         for n in self.nodes.values():
-            for c in n.class_obj.attributes.values():
-                if c in self.nodes.keys():
-                    # Append child
-                    n.children.append(self.nodes[c])
-
-                    # Append parent
-                    self.nodes[c].parents.append(n)
+            if n.class_obj.parent_class:
+                # If the node is inherited, set the parent-child relationships
+                self.nodes[n.class_obj.parent_class_name].children.append(n)
+                n.parents.append(self.nodes[n.class_obj.parent_class_name])
 
         cur_x = self.x + self.x_buffer
         cur_y = self.y + self.y_buffer
@@ -71,7 +68,7 @@ class Graphics(Widget):
 
         for c in n.children:
             if not c.drawn:
-                new_x = self.update_node(c, new_x + c.width + self.x_buffer, new_y)
+                new_x = self.update_node(c, new_x + n.width + self.x_buffer, new_y)
                 c.drawn = True
             self.arrows.append((n.get_lower_right(), c.get_upper_left()))
         n.drawn = True
