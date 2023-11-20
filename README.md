@@ -1,10 +1,11 @@
 # Structure Visualizer
-An application for easily visualizing OOP structures, with attributes and inheritance support.
+Application for easily visualizing OOP structures, with attributes and inheritance support.
 
 ## Quick Start
 ```console
 > git clone https://github.com/Magicspell/StructureVisualizer
 > cd ./StructureVisualizer
+> python -m venv venv
 > ./Start.ps1
 ```
 ## About
