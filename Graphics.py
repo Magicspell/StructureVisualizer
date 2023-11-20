@@ -3,8 +3,8 @@ from Widget import Widget
 
 X_BUFFER = 10
 Y_BUFFER = 10
-NODE_WIDTH = 20
-NODE_HEIGHT = 20
+NODE_WIDTH = 22
+NODE_HEIGHT = 22
 
 class Graphics(Widget):
     def __init__(self, text_parser, loc = (0, 0), width = 100, height = 100, background_color = (0, 0, 0),
@@ -87,10 +87,16 @@ class Graphics(Widget):
             end
         )
 
+TEXT_X_BUFFER = 5
+TEXT_Y_BUFFER = 2
+NAME_LINE_Y_PADDING = 5
+NAME_LINE_X_PADDING = 2
+NAME_LINE_WIDTH = 2
+
 class Node:
     def __init__(self, loc = (0, 0), width = NODE_WIDTH, height = NODE_HEIGHT,
             background_color = (220, 75, 75), name = "PLACEHOLDER", class_obj = None,
-            font_name = "freesansbold.tff", text_color = (0, 0, 0), auto_width = True,
+            font_name = "freesansbold.tff", text_color = (0, 0, 0), auto_size = True,
             attributes = {}):
 
         self.x = loc[0]
@@ -100,28 +106,56 @@ class Node:
         self.name = name
         self.class_obj = class_obj
         self.font = pygame.font.SysFont(font_name, width)
+        self.att_font = pygame.font.SysFont(font_name, int(width / 1.2))
         self.text_color = text_color
 
         self.drawn = False
         self.children = []  # List of nodes
         self.parents = []   # List of nodes
-        self.text_x_buffer = 5
-        self.text_y_buffer = 2
 
         self.attributes = attributes    # String name, String name_of_class
         
-        self.text_surface = self.font.render(self.name, True, self.text_color)
+        name_text_surface = self.font.render(self.name, True, self.text_color)
+        if len(self.attributes) > 0:
+            text_height = name_text_surface.get_height() + TEXT_Y_BUFFER * 2 + NAME_LINE_Y_PADDING * 2
+        else:
+            text_height = name_text_surface.get_height() + TEXT_Y_BUFFER * 2
+        text_width = name_text_surface.get_width() + TEXT_X_BUFFER * 2
+
+        att_text_surfaces = []
+        for a in self.attributes.keys():
+            s = self.att_font.render(f'{self.attributes[a]} {a}', True, self.text_color)
+            att_text_surfaces.append(s)
+            text_height += s.get_height()
+            if s.get_width() + TEXT_X_BUFFER * 2 > text_width: text_width = s.get_width() + TEXT_X_BUFFER * 2
+        
+        self.text_surface = pygame.Surface((text_width, text_height), pygame.SRCALPHA)
+        self.text_surface.blit(name_text_surface, (TEXT_X_BUFFER, TEXT_Y_BUFFER))
+
+        if len(self.attributes) > 0:
+            name_line_surface = pygame.Surface((text_width - NAME_LINE_X_PADDING * 2, NAME_LINE_WIDTH))
+            name_line_surface.fill(self.text_color)
+            self.text_surface.blit(name_line_surface, (NAME_LINE_X_PADDING, name_text_surface.get_height() + TEXT_Y_BUFFER + NAME_LINE_Y_PADDING))
+        
+        y = TEXT_Y_BUFFER + name_text_surface.get_height() + NAME_LINE_Y_PADDING * 2
+        for s in att_text_surfaces:
+            self.text_surface.blit(s, (TEXT_X_BUFFER, y))
+            y += s.get_height() + TEXT_Y_BUFFER
 
         self.width = 0
-        if not auto_width: self.width = width
-        else: self.width = self.text_surface.get_width() + self.text_x_buffer * 2
+        if not auto_size: self.width = width
+        else: self.width = self.text_surface.get_width()
+
+        self.height = 0
+        if not auto_size: self.height = height
+        else: self.height = self.text_surface.get_height()
 
         self.surface = pygame.Surface((self.width, self.height))
         self.surface.fill(self.background_color)
 
     def draw(self, surface):
         surface.blit(self.surface, (self.x, self.y))
-        surface.blit(self.text_surface, (self.x + self.text_x_buffer, self.y + self.text_y_buffer))
+        surface.blit(self.text_surface, (self.x, self.y))
     
     # Returns coords of lower right corner for arrow drawing.
     def get_lower_right(self):

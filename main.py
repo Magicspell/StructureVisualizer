@@ -61,6 +61,7 @@ while running:
     if pygame.mouse.get_pressed()[0]:
         tb.process_mouse(pygame.mouse.get_pos())
     gr.update(tb.get_lines())
+    # TODO: update only if key pressed.
     screen.fill((0, 0, 0))
     tb.draw(screen)
     gr.draw(screen)
